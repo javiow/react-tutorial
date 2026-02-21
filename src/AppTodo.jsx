@@ -1,33 +1,36 @@
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import './App.css';
 import TodoList from './components/todo/TodoList';
+import todoReducer from './reducer/todo-reducer';
+import { useImmerReducer } from 'use-immer';
 
 function AppTodo(props) {
 
   const [todoText, setTodoText] = useState('');
-  const [todos, setTodos] = useState([
+  const [todos, dispatch ] = useImmerReducer(todoReducer, [
     { id:0, text: 'HTML&CSS 공부하기', done: false}
     , { id:1, text: '자바스크립트 공부하기', done: false}
   ])
   const [insertAt, setInsertAt] = useState(todos.length-1);
 
+  //1. Added
   const handleAddTodo = () => {
-    const nextId = todos.length;
-    setTodos([
-      ...todos,
-      { id: nextId, text: todoText, done: false}
-    ])
+    dispatch({
+      type: 'added',
+      nextId: todos.length,
+      todoText
+    })
     setTodoText('');
   }
 
+  //2. Added_index
   const handleAddTodoByIndex = () => {
-    const nextId = todos.length;
-    const newTodos = [
-      ...todos.slice(0, insertAt),
-      {id: nextId, text: todoText, done: false},
-      ...todos.slice(insertAt)
-    ]
-    setTodos(newTodos);
+    dispatch({
+      type:'added_index',
+      insertAt,
+      nextId: todos.length,
+      todoText
+    })
     setTodoText('');
   }
 
@@ -35,30 +38,28 @@ function AppTodo(props) {
     setTodoText(e.target.value);
   }
 
+  //3. Deleted
   const handleDeleteTodo = (deleteId) => {
-    const newTodos = todos.filter(item => item.id !== deleteId);
-    setTodos(newTodos);
+    dispatch({
+      type: 'deleted',
+      deleteId
+    })
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter'){
+  const handleAddTodoOnEnter = (e) => {
+    if (e.key === 'Enter' && e.nativeEvent.isComposing === false){
       handleAddTodo();
     }
   }
 
+  //4. Done
   const handleToggleTodo = (id, done) => {
-    const nextTodos = todos.map(item => {
-      if (item.id === id){
-        return {...item, done};
-      }
-      return item;
-    })
-
-    setTodos(nextTodos);
+    dispatch({ type: 'done', id, done})
   }
 
+  //5. Reverse
   const handleReverse = () => {
-    setTodos(todos.toReversed());
+    dispatch({ type: 'reverse' })
   }
 
   return (
@@ -69,7 +70,7 @@ function AppTodo(props) {
           type="text" 
           value={todoText} 
           onChange={handleTodoTextChange}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleAddTodoOnEnter}
         />
         <button onClick={handleAddTodo}>추가</button>
       </div>
