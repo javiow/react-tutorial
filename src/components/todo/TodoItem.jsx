@@ -1,7 +1,9 @@
-import { useContext } from "react"
+import { memo } from "react"
 import { useTodosDispatch } from "../../context/TodoContext"
 
-export default function TodoItem({ item }){
+export default memo(function TodoItem({ item }){
+
+  console.log('TodoItem 리렌더링');
 
   const dispatch = useTodosDispatch();
 
@@ -25,4 +27,4 @@ export default function TodoItem({ item }){
       <button onClick={() => handleDeleteTodo(item.id)}>X</button>
     </label>
   )
-}
+})
